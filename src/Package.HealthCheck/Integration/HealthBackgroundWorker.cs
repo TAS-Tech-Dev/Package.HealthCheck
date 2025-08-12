@@ -4,12 +4,14 @@ using Microsoft.Extensions.Options;
 using OpenTelemetry.Trace;
 using Prometheus;
 using RabbitMQ.Client;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using Package.HealthCheck.Core;
 
 namespace Package.HealthCheck.Integration;
 
+[ExcludeFromCodeCoverage]
 public sealed class HealthBackgroundWorker : BackgroundService
 {
     private static readonly Gauge HealthStatusGauge = Metrics.CreateGauge(
