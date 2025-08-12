@@ -1,2 +1,6 @@
 # Package.HealthCheck
-Pacote para verificação padrão de Vida e Situação do Serviço
+
+Documentação centralizada em `docs/README.md`.
+
+- Projeto: `src/Package.HealthCheck`
+- Endpoints: `/health/live`, `/health/ready`, `/health/startup`, `/health/details`
