@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Package.HealthCheck;
+using Package.HealthCheck.Endpoints;
 using Xunit;
 
 namespace Package.HealthCheck.Tests;

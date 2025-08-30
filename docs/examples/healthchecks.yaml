@@ -1,0 +1,120 @@
+# Configuração YAML para Package.HealthCheck
+# Este arquivo demonstra todas as funcionalidades disponíveis
+
+healthCheck:
+  # Configurações básicas
+  enableStartupProbe: true
+  enableAutoDiscovery: true
+  
+  # Configuração do endpoint de detalhes
+  detailsEndpointAuth:
+    enabled: true
+    apiKey: "${HEALTH_API_KEY}"
+  
+  # Publicação para message bus
+  publishToMessageBus:
+    enabled: true
+    broker: "rabbitmq"
+    exchange: "platform.health"
+    routingKey: "service.status"
+  
+  # Dependências configuradas
+  dependencies:
+    postgres:
+      connectionString: "${DB_CONNECTION_STRING}"
+    
+    redis:
+      connectionString: "${REDIS_CONNECTION_STRING}"
+    
+    rabbitMq:
+      connectionString: "${RABBITMQ_CONNECTION_STRING}"
+    
+    # Dependências HTTP externas
+    httpDependencies:
+      - name: "payment-service"
+        url: "https://payment-api.example.com/health"
+        critical: true
+        timeoutSeconds: 5
+        
+      - name: "user-service"
+        url: "https://user-api.example.com/health"
+        critical: false
+        timeoutSeconds: 3
+        
+      - name: "notification-service"
+        url: "https://notification-api.example.com/health"
+        critical: false
+        timeoutSeconds: 2
+  
+  # Service Mesh Integration
+  serviceMesh:
+    enabled: true
+    baseUrl: "http://localhost:15020"
+    meshType: "Istio"
+    serviceName: "user-api"
+    timeoutSeconds: 30
+    reportMetrics: true
+  
+  # Análise Preditiva com ML
+  predictiveAnalysis:
+    enabled: true
+    analysisWindowHours: 24
+    analysisIntervalMinutes: 15
+    minimumDataPoints: 10
+    degradationThreshold: 0.3
+    criticalThreshold: 0.7
+  
+  # Dashboard Integrado
+  dashboard:
+    enabled: true
+    route: "/health-dashboard"
+    enableAutoRefresh: true
+    refreshIntervalSeconds: 30
+
+# Configurações de logging
+logging:
+  logLevel:
+    default: "Information"
+    Package.HealthCheck: "Debug"
+    Package.HealthCheck.ML: "Information"
+
+# Configurações de OpenTelemetry
+opentelemetry:
+  traces:
+    exporters:
+      - console
+      - jaeger
+    sources:
+      - Package.HealthCheck
+
+# Configurações de Prometheus
+prometheus:
+  enabled: true
+  metrics:
+    - health_status
+    - health_checks_total
+    - health_checks_healthy
+    - health_checks_unhealthy
+
+# Configurações de alertas
+alerts:
+  service:
+    enableExternalChannels: true
+    enableAutoActions: true
+    enableSlackIntegration: true
+    enableEmailIntegration: false
+    enableWebhookIntegration: true
+    enableAutoRestart: false
+    
+    slack:
+      token: "${SLACK_TOKEN}"
+      channel: "#alerts"
+    
+    webhook:
+      url: "${WEBHOOK_URL}"
+
+# Configurações de ambiente
+environment:
+  name: "production"
+  region: "us-east-1"
+  version: "1.0.0"

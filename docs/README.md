@@ -1,346 +1,295 @@
-# Package.HealthCheck — Guia de Implementação
+# 🏥 Package.HealthCheck
 
-## Objetivo
+## 📋 Visão Geral
 
-Fornecer um pacote padronizado para verificação de vida (liveness), prontidão (readiness) e inicialização (startup) de serviços do MegaWish, além de checagens de dependências (DB, fila, cache, HTTP/grpc externos) e exposição de endpoints consistentes para orquestradores (Kubernetes, Docker Compose), BFFs e monitoramento.
+O **Package.HealthCheck** é uma solução abrangente e inteligente para monitoramento de saúde de aplicações .NET, oferecendo configuração plug-and-play, descoberta automática de dependências e análise preditiva com machine learning.
 
-## Escopo
+## 🎯 Objetivos
 
-- Extensões de registrar e expor health checks.
-- Conjunto de IHealthCheck customizados para dependências comuns.
-- Endpoints padronizados:
-  - `GET /health/live` (liveness)
-  - `GET /health/ready` (readiness)
-  - `GET /health/startup` (startup – opcional)
-  - `GET /health/details` (JSON detalhado, protegido)
-- Tags/Severidade (critical | noncritical) e grupos (infra|external|internal).
-- Integração com Observabilidade: métricas Prometheus, logs estruturados, traços (OTel), e eventos de mudança de estado.
-- Publicação opcional do estado em mensageria (ex.: RabbitMQ) para um painel consolidado.
-- Compatível com Kubernetes probes e Docker healthcheck.
+- **Configuração Plug-and-Play**: Descoberta automática de dependências e configuração inteligente
+- **Segurança**: Dados sensíveis protegidos via código, configurações não sensíveis via YAML/JSON
+- **Flexibilidade**: API fluente para configuração programática + suporte a arquivos de configuração
+- **Inteligência**: Análise preditiva e auto-healing baseado em padrões históricos
+- **Integração**: Service Mesh, OpenTelemetry, Prometheus, e mais
+- **Observabilidade**: Dashboard integrado e métricas em tempo real
 
----
+## 🏗️ Arquitetura
 
-## Estrutura do Pacote
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Package.HealthCheck                      │
+├─────────────────────────────────────────────────────────────┤
+│  🔍 Auto-Discovery    │  🎛️  API Fluente    │  📄 YAML/JSON  │
+│  • DbContexts         │  • AddPostgres()   │  • Config      │
+│  • HttpClients        │  • AddRedis()      │  • Dashboard   │
+│  • Services           │  • AddDashboard()  │  • ML Config   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Health Checks                           │
+├─────────────────────────────────────────────────────────────┤
+│  🗄️  Databases  │  🌐 HTTP      │  🧠 ML        │  🕸️  Mesh    │
+│  • PostgreSQL   │  • Dependencies│  • Predictive │  • Istio    │
+│  • Redis        │  • Timeouts    │  • Analysis   │  • Linkerd  │
+│  • RabbitMQ     │  • Critical    │  • Auto-heal  │  • Consul   │
+│  • SQL Server   │  • Tags        │  • Alerts     │             │
+│  • MySQL        │                │  • History    │             │
+│  • MongoDB      │                │               │             │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Observabilidade                         │
+├─────────────────────────────────────────────────────────────┤
+│  📊 Dashboard  │  📈 Metrics   │  🔍 Tracing   │  📝 Logging  │
+│  • Web UI      │  • Prometheus │  • OpenTelemetry│  • Serilog  │
+│  • Real-time   │  • Custom     │  • Distributed │  • Structured│
+│  • Auto-refresh│  • Health     │  • Correlation │  • JSON     │
+└─────────────────────────────────────────────────────────────┘
+```
 
-- Nome: `Package.HealthCheck`
-- Namespaces:
-  - `Package.HealthCheck`
-  - `Package.HealthCheck.Core`
-  - `Package.HealthCheck.Checks`
-  - `Package.HealthCheck.Endpoints`
-  - `Package.HealthCheck.Integration`
+## 🚀 Funcionalidades
 
-Dependências (NuGet):
+### 🔍 **Auto-Discovery (v2.0)**
+- Descoberta automática de `DbContext`s registrados
+- Detecção de `HttpClient`s configurados
+- Busca por serviços com `HealthCheckAttribute`
+- Criação automática de health checks apropriados
 
-- `Microsoft.Extensions.Diagnostics.HealthChecks` (via framework)
-- Provedores opcionais:
-  - `AspNetCore.HealthChecks.NpgSql` / `SqlServer` / `MySql` / `MongoDb`
-  - `AspNetCore.HealthChecks.Redis`
-  - `AspNetCore.HealthChecks.RabbitMQ`
-  - `AspNetCore.HealthChecks.Uris`
-  - `OpenTelemetry.Extensions.Hosting`
-  - `prometheus-net.AspNetCore`
-  - `Serilog.AspNetCore`
+### 🎛️ **API Fluente (v2.0)**
+- Configuração programática para dados sensíveis
+- Builder pattern intuitivo e type-safe
+- IntelliSense completo e validação em tempo de compilação
+- Exemplo: `services.AddHealthChecks("Service").AddPostgres(connString).AddDashboard()`
 
----
+### 📄 **Suporte a YAML (v2.0)**
+- Configuração via arquivos YAML (não sensíveis)
+- Parsing customizado com `YamlDotNet`
+- Integração com sistema de configuração do .NET
+- Fallback para configurações padrão
 
-## Modelo de Configuração
+### 🕸️ **Integração Service Mesh (v2.0)**
+- Suporte a Istio, Linkerd e Consul
+- Health checks de conectividade de mesh
+- Métricas de latência e disponibilidade
+- Configuração via API fluente ou YAML
 
-`appsettings.json` (exemplo):
+### 🧠 **Análise Preditiva com ML (v2.0)**
+- Análise de padrões históricos de health
+- Detecção precoce de degradação
+- Alertas proativos e auto-healing
+- Configuração de thresholds personalizados
 
-```json
+### 📊 **Dashboard Integrado (v2.0)**
+- Interface web para monitoramento em tempo real
+- Auto-refresh configurável
+- Visualização de status e métricas
+- Rota customizável
+
+### 🔐 **Segurança Híbrida**
+- **Dados sensíveis**: Configurados via código (connection strings, API keys)
+- **Configurações não sensíveis**: Via YAML/JSON (timeouts, routes, thresholds)
+- **Variáveis de ambiente**: Para configurações de produção
+- **Azure Key Vault/AWS Secrets Manager**: Integração planejada
+
+## 📝 Exemplos de Uso
+
+### 🔐 **API Fluente (Recomendado para dados sensíveis)**
+
+```csharp
+// Program.cs
+builder.Services
+    .AddMegaWishHealthChecksBuilder("UserService")
+    .AddPostgres(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION"))
+    .AddRedis(Environment.GetEnvironmentVariable("REDIS_CONNECTION"))
+    .AddServiceMesh(Environment.GetEnvironmentVariable("ISTIO_URL"), apiKey: Environment.GetEnvironmentVariable("ISTIO_API_KEY"))
+    .AddPredictiveAnalysis(analysisWindowHours: 48, degradationThreshold: 0.25)
+    .AddDashboard("/health-ui", enableAutoRefresh: true, refreshIntervalSeconds: 15)
+    .EnableAutoDiscovery()
+    .Build();
+```
+
+### 📄 **Configuração YAML (Para configurações não sensíveis)**
+
+```yaml
+# healthchecks.yaml
+HealthCheck:
+  Dashboard:
+    Enabled: true
+    Route: "/health-dashboard"
+    EnableAutoRefresh: true
+    RefreshIntervalSeconds: 30
+  
+  PredictiveAnalysis:
+    Enabled: true
+    AnalysisWindowHours: 24
+    AnalysisIntervalMinutes: 15
+    DegradationThreshold: 0.3
+    CriticalThreshold: 0.7
+  
+  ServiceMesh:
+    Enabled: true
+    MeshType: "Istio"
+    TimeoutSeconds: 30
+    ReportMetrics: true
+```
+
+### 🔄 **Abordagem Híbrida (Recomendada)**
+
+```csharp
+// Dados sensíveis via código
+builder.Services
+    .AddMegaWishHealthChecksBuilder("HybridService")
+    .AddPostgres(Environment.GetEnvironmentVariable("POSTGRES_CONNECTION"))
+    .AddRedis(Environment.GetEnvironmentVariable("REDIS_CONNECTION"))
+    .Build();
+
+// Configurações não sensíveis via YAML
+// (carregadas automaticamente do appsettings.yaml)
+```
+
+## 🏷️ HealthCheckAttribute
+
+Configure health checks de forma declarativa:
+
+```csharp
+[HealthCheck("user-database", HealthCheckType.Database, tags: new[] { "critical", "ready" })]
+public class UserDbContext : DbContext
 {
-  "HealthCheck": {
-    "EnableStartupProbe": true,
-    "DetailsEndpointAuth": {
-      "Enabled": true,
-      "ApiKey": "super-secret-key"
-    },
-    "PublishToMessageBus": {
-      "Enabled": false,
-      "Broker": "amqp://guest:guest@rabbit:5672",
-      "Exchange": "platform.health",
-      "RoutingKey": "service.status"
-    },
-    "Dependencies": {
-      "Postgres": {
-        "ConnectionString": "Host=...;Username=...;Password=...;Database=..."
-      },
-      "Redis": {
-        "ConnectionString": "redis:6379,password=..."
-      },
-      "RabbitMq": {
-        "ConnectionString": "amqp://guest:guest@rabbit:5672"
-      },
-      "HttpDependencies": [
-        { "Name": "Payments.API", "Url": "https://payments/api/ping", "Critical": true, "TimeoutSeconds": 2 },
-        { "Name": "Geo.API", "Url": "https://geo/api/health", "Critical": false, "TimeoutSeconds": 2 }
-      ]
-    }
-  }
+    // Implementação do contexto
+}
+
+[HealthCheck("external-api", HealthCheckType.Http, timeoutSeconds: 5, isCritical: true)]
+public class ExternalApiService
+{
+    // Implementação do serviço
 }
 ```
 
----
+## 🔧 Configuração
 
-## Convenções de Tags e Severidades
+### 1. **Instalação**
 
-- Tags por finalidade: `["live"]`, `["ready"]`, `["startup"]`
-- Tags por domínio: `["infra"]`, `["external"]`, `["internal"]`
-- Severidade: `critical` (quebra readiness) vs `noncritical` (degrada, mas não derruba readiness)
-- Política:
-  - `live`: deve retornar Healthy se o processo está respondendo (não checa dependências).
-  - `ready`: retorna Healthy somente se serviços critical estiverem saudáveis.
-  - `startup`: Deve retornar Healthy somente após bootstrap (migrations, caches quentes, warm-up).
+```bash
+dotnet add package Package.HealthCheck
+```
 
----
-
-## API/Endpoints
-
-### 1) GET /health/live
-- Uso: Kubernetes livenessProbe, Docker.
-- Resposta: 200 OK (Healthy) | 503 Service Unavailable (Unhealthy).
-- Body (texto): `Healthy`/`Unhealthy`.
-
-### 2) GET /health/ready
-- Uso: Kubernetes readinessProbe.
-- Considera only critical checks (DB, fila, cache, etc.).
-- Resposta: `200 | 503`, com resumo em JSON quando `Accept: application/json`.
-
-### 3) GET /health/startup
-- Uso: startupProbe.
-- Só fica Healthy após warm-ups concluídos.
-
-### 4) GET /health/details
-- Uso: Humanos/Observabilidade; protegido por API Key ou rede interna.
-- Resposta (JSON) no padrão `data/errors/_links`.
-
----
-
-## Registro no Program.cs
+### 2. **Configuração Básica**
 
 ```csharp
-using Package.HealthCheck;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddMegaWishHealthChecks(builder.Configuration, options =>
-{
-    options.ServiceName = "Service.MS";
-    options.EnableStartupProbe = true;
-
-    // Dependências (critical)
-    options.UsePostgres("postgres", builder.Configuration["HealthCheck:Dependencies:Postgres:ConnectionString"], critical: true);
-    options.UseRedis("redis", builder.Configuration["HealthCheck:Dependencies:Redis:ConnectionString"], critical: true);
-    options.UseRabbitMq("rabbitmq", builder.Configuration["HealthCheck:Dependencies:RabbitMq:ConnectionString"], critical: true);
-
-    // HTTP externos
-    options.UseHttpDependency("payments.api",
-        url: builder.Configuration["HealthCheck:Dependencies:HttpDependencies:0:Url"],
-        critical: true, timeoutSeconds: 2, tags: new[] { "external" });
-
-    options.UseHttpDependency("geo.api",
-        url: builder.Configuration["HealthCheck:Dependencies:HttpDependencies:1:Url"],
-        critical: false, timeoutSeconds: 2, tags: new[] { "external" });
-
-    // Checks de sistema (noncritical)
-    options.UseDiskSpace(minimumFreeMb: 200, tagGroup: "infra");
-    options.UseWorkingSet(maxMb: 1024, tagGroup: "infra");
-});
+// Program.cs
+builder.Services.AddMegaWishHealthChecksBuilder("MeuServico");
 
 var app = builder.Build();
 
-app.UseMegaWishHealthEndpoints(builder.Configuration, opt =>
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
-    opt.ProtectDetailsWithApiKey = true; // usa HealthCheck:DetailsEndpointAuth
+    Predicate = registration => registration.Tags.Contains("ready")
 });
-
-app.MapControllers();
-app.Run();
 ```
 
----
-
-## Extensões Principais
-
-- `IServiceCollection.AddMegaWishHealthChecks(IConfiguration, Action<MegaWishHealthOptions>)`
-  - Configura registradores de checks comuns e permite `UseXyz(...)` na lambda.
-  - Faz wire-up com OTel.
-  - Registra background worker para métricas e publicação opcional (RabbitMQ).
-
-- `IApplicationBuilder.UseMegaWishHealthEndpoints(IConfiguration, Action<HealthEndpointOptions>?)`
-  - Mapeia `/health/live`, `/health/ready`, `/health/startup`, `/health/details`.
-  - Aplica autenticação por API Key em `/health/details` quando habilitado.
-
-### Checks inclusos
-
-- Infra: Postgres/Redis/RabbitMQ, Disco, Memória.
-- Rede: HTTP(s) ping com timeout.
-- Custom: `StartupGateHealthCheck` (Unhealthy até bootstrap concluído).
-
----
-
-## Política de Status
-
-- Healthy: tudo OK ou apenas problemas noncritical.
-- Degraded: ao menos um noncritical está ruim (readiness ainda pode ser 200).
-- Unhealthy: qualquer critical falhou (readiness 503).
-
----
-
-## Segurança do /health/details
-
-- API Key via Header: `X-Health-ApiKey: <key>`
-- Alternativa: Allowlist de IPs internos (implementar no host, se desejado).
-
----
-
-## Integração com Observabilidade
-
-### Métricas (Prometheus)
-
-- `health_status{service="<svc>", check="<name>"} = 1|0|-1`
-  - `1`: Healthy, `0`: Degraded, `-1`: Unhealthy
-- `health_last_change_timestamp_seconds{service="<svc>"}`
-
-### Logs
-
-- Evento de mudança: `HealthStateChanged` com `Service`, `OldStatus`, `NewStatus`.
-
-### Tracing (OTel)
-
-- Span de avaliação de saúde pode ser adicionado no host; o pacote expõe integração básica via `AddOpenTelemetry()`.
-
----
-
-## Publicação em Mensageria (Opcional)
-
-Quando `PublishToMessageBus.Enabled = true`, o pacote publica mensagens (RabbitMQ):
-
-```json
-{
-  "service": "Service.MS",
-  "status": "Unhealthy",
-  "timestamp": "2025-08-12T01:23:45Z",
-  "entries": [
-    { "name": "postgres", "status": "Healthy" },
-    { "name": "payments.api", "status": "Unhealthy", "error": "Timeout" }
-  ]
-}
-```
-
-- Exchange: `platform.health` | routing key: `service.status`.
-
----
-
-## Kubernetes — Probes (exemplo)
-
-```yaml
-livenessProbe:
-  httpGet: { path: /health/live, port: 8080 }
-  initialDelaySeconds: 20
-  periodSeconds: 10
-readinessProbe:
-  httpGet: { path: /health/ready, port: 8080 }
-  initialDelaySeconds: 25
-  periodSeconds: 10
-startupProbe:
-  httpGet: { path: /health/startup, port: 8080 }
-  failureThreshold: 30
-  periodSeconds: 5
-```
-
-## Docker Compose — Healthcheck (exemplo)
-
-```yaml
-services:
-  service.ms:
-    image: megawish/service.ms:latest
-    ports: ["8080:8080"]
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
-      interval: 10s
-      timeout: 2s
-      retries: 10
-      start_period: 30s
-```
-
----
-
-## Implementações Customizadas (exemplos)
-
-### 1) StartupGateHealthCheck
+### 3. **Configuração Avançada**
 
 ```csharp
-public sealed class StartupSignal
-{
-    public bool IsReady { get; private set; }
-    public void MarkReady() => IsReady = true;
-}
-
-public sealed class StartupGateHealthCheck : IHealthCheck
-{
-    private readonly StartupSignal _signal;
-    public StartupGateHealthCheck(StartupSignal signal) => _signal = signal;
-
-    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken ct = default)
-        => Task.FromResult(_signal.IsReady
-           ? HealthCheckResult.Healthy("Startup complete")
-           : HealthCheckResult.Unhealthy("Startup in progress"));
-}
+builder.Services
+    .AddMegaWishHealthChecksBuilder("ServicoAvancado")
+    .AddPostgres("Server=localhost;Database=app;User Id=user;Password=pass;")
+    .AddRedis("localhost:6379")
+    .AddServiceMesh("http://istio:15020", "Istio", "app-service")
+    .AddPredictiveAnalysis()
+    .AddDashboard()
+    .EnableAutoDiscovery()
+    .Build();
 ```
 
-No bootstrap:
+## 📊 Endpoints Disponíveis
 
-```csharp
-// Após migrations & warm-ups
-app.Services.GetRequiredService<StartupSignal>().MarkReady();
+- **`/health`** - Status geral de saúde
+- **`/health/live`** - Liveness probe (Kubernetes)
+- **`/health/ready`** - Readiness probe (Kubernetes)
+- **`/health/startup`** - Startup probe (Kubernetes)
+- **`/health/details`** - Detalhes completos (protegido por API key)
+- **`/health-dashboard`** - Dashboard web integrado
+
+## 🚀 Integrações
+
+### **Observabilidade**
+- **OpenTelemetry**: Tracing distribuído
+- **Prometheus**: Métricas e alertas
+- **Serilog**: Logging estruturado
+- **Grafana**: Dashboards avançados
+
+### **Service Mesh**
+- **Istio**: Configuração avançada de mesh
+- **Linkerd**: Service mesh leve
+- **Consul**: Service discovery e mesh
+
+### **Cloud Native**
+- **Kubernetes**: Probes automáticos
+- **Docker**: Health checks de container
+- **Helm**: Deployments parametrizados
+
+## 📈 Roadmap
+
+### **v2.1 (Próxima versão)**
+- [ ] Integração com Azure Key Vault
+- [ ] Suporte a AWS Secrets Manager
+- [ ] Health checks para Elasticsearch
+- [ ] Métricas customizáveis
+
+### **v2.2**
+- [ ] Auto-healing automático
+- [ ] Integração com PagerDuty/Slack
+- [ ] Health checks para Cassandra
+- [ ] Suporte a múltiplos ambientes
+
+### **v3.0 (Futuro)**
+- [ ] Machine Learning avançado
+- [ ] Análise de dependências entre serviços
+- [ ] Health checks baseados em AI
+- [ ] Integração com Service Mesh avançada
+
+## 🧪 Testes
+
+```bash
+# Executar testes unitários
+dotnet test
+
+# Executar testes com cobertura
+dotnet test --collect:"XPlat Code Coverage"
+
+# Executar testes específicos
+dotnet test --filter "FullyQualifiedName~HealthCheckBuilder"
 ```
 
-### 2) HTTP Dependency Check com Timeout
+## 📚 Documentação
 
-```csharp
-public sealed class HttpDependencyHealthCheck : IHealthCheck
-{
-    private readonly HttpClient _client;
-    private readonly string _url;
-    private readonly TimeSpan _timeout;
+- [**API Fluente**](examples/fluent-api-usage.md) - Como usar a nova API fluente
+- [**Atributos**](attributes.md) - Uso do HealthCheckAttribute
+- [**Exemplos YAML**](examples/healthchecks.yaml) - Configurações de exemplo
+- [**Migração**](examples/migration-guide.md) - Guia de migração da v1 para v2
 
-    public HttpDependencyHealthCheck(HttpClient client, string url, int timeoutSeconds = 2)
-    { _client = client; _url = url; _timeout = TimeSpan.FromSeconds(timeoutSeconds); }
+## 🤝 Contribuição
 
-    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext ctx, CancellationToken ct = default)
-    {
-        using var cts = new CancellationTokenSource(_timeout);
-        try
-        {
-            var res = await _client.GetAsync(_url, cts.Token);
-            return res.IsSuccessStatusCode
-                ? HealthCheckResult.Healthy()
-                : HealthCheckResult.Unhealthy($"HTTP {(int)res.StatusCode}");
-        }
-        catch (Exception e)
-        { return HealthCheckResult.Unhealthy(e.Message); }
-    }
-}
-```
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## 🆘 Suporte
+
+- **Issues**: [GitHub Issues](https://github.com/megawish/Package.HealthCheck/issues)
+- **Documentação**: [docs/](docs/)
+- **Exemplos**: [docs/examples/](docs/examples/)
+- **Wiki**: [GitHub Wiki](https://github.com/megawish/Package.HealthCheck/wiki)
 
 ---
 
-## Passo a Passo de Adoção
-
-1. Adicionar pacote `Package.HealthCheck` ao seu serviço.
-2. Configurar `HealthCheck` no `appsettings.json`.
-3. Registrar no `Program.cs` com `AddMegaWishHealthChecks(...)` e `UseMegaWishHealthEndpoints(...)`.
-4. Configurar Probes (K8s) ou healthcheck (Compose).
-5. Habilitar Observabilidade (métricas/logs/OTel) no host.
-6. (Opcional) Publicação para painel via RabbitMQ.
-
----
-
-## Roadmap
-
-- Checks de ElasticSearch e S3.
-- UI leve embutida em `/health/ui` (ambientes internos).
-- Integração com Polly (circuit breaker awareness).
-- Auto-discovery de checks por DI com `IHealthContributor`.
+**⭐ Se este projeto te ajudou, considere dar uma estrela!**
